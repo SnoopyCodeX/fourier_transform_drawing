@@ -1,25 +1,42 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 ArrayList<PVector> path = new ArrayList<>();
 JSONArray dataJSONPath;
 
-Map<Integer, Map<String, Float>> dftsX;
-Map<Integer, Map<String, Float>> dftsY;
+ArrayList<Map<String, Float>> dftsX;
+ArrayList<Map<String, Float>> dftsY;
 Float[] signalsX;
 Float[] signalsY;
 
 float time = 0;
-int skip = 1;
 int col = 255;
+
+/**
+ * Increase or decrease the value of
+ * this to make the drawing faster or slower.
+ *
+ * This will skip some points in the paths (the json file provided)
+ * which will make the drawing faster. This is useful
+ * when you have a lot of points.
+ *
+ * Example, try loading the "train_path.json" in the code below
+ * at line 39 and leave the value of this `skip` variable to 1.
+ * You will notice that the drawing is a bit slow because the
+ * paths of the drawing has a lot of points. Now, try changing the
+ * value of this `skip` variable to 8 and re-run this sketch. Now it's
+ * fast. Only do this if you have a lot of points in your drawing.
+ */
+int skip = 1;
 
 void setup() {
   size(1100, 900);
   windowTitle("Fourier Transform Drawing");
   
   // Load json file that contains the paths
-  dataJSONPath = loadJSONArray("face_path.json");
+  dataJSONPath = loadJSONArray("train_path.json");
   
   ArrayList<Float> tempX = new ArrayList<>();
   ArrayList<Float> tempY = new ArrayList<>();
@@ -36,6 +53,9 @@ void setup() {
   
   dftsX = dft(signalsX);
   dftsY = dft(signalsY);
+  
+  dftsX.sort(new DFTSorter());
+  dftsY.sort(new DFTSorter());
 }
 
 void draw() {
@@ -68,7 +88,7 @@ void draw() {
   }
 }
 
-PVector epiCycles(float x, float y, float rotation, Map<Integer, Map<String, Float>> fourier) {
+PVector epiCycles(float x, float y, float rotation, ArrayList<Map<String, Float>> fourier) {
   for(int i = 0; i < fourier.size(); i++) {
     float prevX = x;
     float prevY = y;
@@ -99,8 +119,8 @@ PVector epiCycles(float x, float y, float rotation, Map<Integer, Map<String, Flo
  *@param {int[]} x The array of signals
  *@return {Map<Integer, Map<String, Float>>}
  */
-Map<Integer, Map<String, Float>> dft(Float[] x) {
-  Map<Integer, Map<String, Float>> X = new HashMap<>();
+ArrayList<Map<String, Float>> dft(Float[] x) {
+  ArrayList<Map<String, Float>> X = new ArrayList<>();
   int N = x.length;
   
   for(int k = 0; k < N; k++) {
@@ -127,8 +147,20 @@ Map<Integer, Map<String, Float>> dft(Float[] x) {
     temp.put("frequency", frequency);
     temp.put("amplitude", amplitude);
     temp.put("phase", phase);
-    X.put(k, temp);
+    X.add(k, temp);
   }
   
   return X;
+}
+
+/**
+ * DFT Sorter class.
+ * This will be used to sort the calculated DFTs
+ * of each signals by their amplitudes.
+ */
+class DFTSorter implements Comparator<Map<String, Float>> {
+  @Override
+  public int compare(Map<String, Float> a, Map<String, Float> b) {
+    return b.get("amplitude").compareTo(a.get("amplitude")); 
+  }
 }
