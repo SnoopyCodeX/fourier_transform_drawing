@@ -19,7 +19,7 @@ void setup() {
   windowTitle("Fourier Transform Drawing");
   
   // Load json file that contains the paths
-  dataJSONPath = loadJSONArray("hilbert_path.json");
+  dataJSONPath = loadJSONArray("face_path.json");
   
   ArrayList<Float> tempX = new ArrayList<>();
   ArrayList<Float> tempY = new ArrayList<>();
